@@ -5,6 +5,7 @@ import bgu.spl.mics.Broadcast;
 public class TickBroadcast implements Broadcast {
 
     private String senderId;
+    private int currentTick;
 
     public TickBroadcast(String senderId) {
         this.senderId = senderId;
