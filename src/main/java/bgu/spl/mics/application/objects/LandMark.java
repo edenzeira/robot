@@ -5,5 +5,25 @@ package bgu.spl.mics.application.objects;
  * Landmarks are identified and updated by the FusionSlam service.
  */
 public class LandMark {
-    // TODO: Define fields and methods.
+    private String id;
+    private String description;
+    private CloudPoint location;
+
+    public LandMark(String id, String description, CloudPoint location) {
+        this.id = id;
+        this.description = description;
+        this.location = location;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public CloudPoint getLocation() {
+        return location;
+    }
 }

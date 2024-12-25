@@ -8,6 +8,18 @@ package bgu.spl.mics.application.objects;
 public class FusionSlam {
     // Singleton instance holder
     private static class FusionSlamHolder {
-        // TODO: Implement singleton instance logic.
+        private List<StampedCloudPoints> stampedCloudPoints;
+
+        public FusionSlam(List<StampedCloudPoints> stampedCloudPoints) {
+            this.stampedCloudPoints = stampedCloudPoints;
+        }
+
+        public List<StampedCloudPoints> getStampedCloudPoints() {
+            return stampedCloudPoints;
+        }
+
+        public void processSlamData() {
+            // Implement SLAM logic here
+        }
     }
 }
