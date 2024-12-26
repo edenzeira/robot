@@ -5,14 +5,16 @@ package bgu.spl.mics.application.objects;
  * Includes x, y coordinates and the yaw angle relative to a global coordinate system.
  */
 public class Pose {
-    private double x;
-    private double y;
-    private double orientation;
+    private float x;
+    private float y;
+    private float yaw;
+    private int time;
 
-    public Pose(double x, double y, double orientation) {
+    public Pose(float x, float y, float yaw, int time) {
         this.x = x;
         this.y = y;
-        this.orientation = orientation;
+        this.yaw = yaw;
+        this.time = time;
     }
 
     public double getX() {
@@ -23,13 +25,11 @@ public class Pose {
         return y;
     }
 
-    public double getOrientation() {
-        return orientation;
+    public float getYaw() {
+        return yaw;
     }
 
-    public void updatePose(double newX, double newY, double newOrientation) {
-        this.x = newX;
-        this.y = newY;
-        this.orientation = newOrientation;
+    public int getTime() {
+        return time;
     }
 }

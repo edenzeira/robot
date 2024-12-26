@@ -7,8 +7,9 @@ public class PoseEvent implements Event<String> {
     private String senderName;
     private Pose pose;
 
-    public PoseEvent(String senderName) {
+    public PoseEvent(String senderName, Pose pose) {
         this.senderName = senderName;
+        this.pose = pose;
     }
 
     public String getObjectId() {

@@ -1,7 +1,17 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.CrashedBroadcast;
+import bgu.spl.mics.application.messages.DetectObjectsEvent;
+import bgu.spl.mics.application.messages.TerminatedBroadcast;
+import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.Camera;
+import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.application.objects.STATUS;
+import bgu.spl.mics.application.objects.StampedDetectedObjects;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CameraService is responsible for processing data from the camera and
@@ -18,7 +28,7 @@ public class CameraService extends MicroService {
      * @param camera The Camera object that this service will use to detect objects.
      */
     public CameraService(Camera camera) {
-        super("CameraService" + camera.getId());
+        super("Cam" + camera.getId());
         this.camera = camera;
     }
 
@@ -29,20 +39,32 @@ public class CameraService extends MicroService {
      */
     @Override
     protected void initialize() {
-        // Subscribe to TickBroadcast to process ticks
+        //Subscribe to TickBroadcast to process ticks
         subscribeBroadcast(TickBroadcast.class, tick -> {
-            if (camera.getStatus() == Camera.CameraStatus.UP) {
-                // Simulate object detection
-                StampedDetectedObjects detectedObjects = camera.detectObjects(tick.getCurrentTick());
+            //if camera is operational, retrieve list of stamped objects
+            if (camera.getStatus() == STATUS.UP) {
+                List<StampedDetectedObjects> detectedObjects = camera.getDetectedObjectsList();
                 if (detectedObjects != null) {
-                    // Create and send a DetectObjectsEvent
-                    DetectObjectsEvent event = new DetectObjectsEvent(detectedObjects);
-                    sendEvent(event);
+                    //finds the correct object according to the time
+                    for (StampedDetectedObjects object : detectedObjects) {
+                        if (object.getTime() == TickBroadcast.getCurrentTick() + camera.getFrequency()) {
+                            //send detected objects event
+                            DetectObjectsEvent event = new DetectObjectsEvent(object.getDetectedObjects(), this.getName(), TickBroadcast.getCurrentTick());
+                            sendEvent(event);
+                            break;
+                        }
+                    }
                 }
             }
+    });
+        //subscribe to TerminatedBroadcast //do we need to classify for each service ?? how to do it?!?!?!?!
+        subscribeBroadcast(TerminatedBroadcast.class, terminated -> {
         });
 
-        // Register the microservice in the message bus
-        System.out.println(getName() + " initialized and ready.");
+        //subscribe to CrushedBroadcast
+        subscribeBroadcast(CrashedBroadcast.class, crashed -> {
+
+        });
+
     }
 }

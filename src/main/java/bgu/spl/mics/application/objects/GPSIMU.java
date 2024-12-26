@@ -1,41 +1,38 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.List;
+
 /**
  * Represents the robot's GPS and IMU system.
  * Provides information about the robot's position and movement.
  */
 public class GPSIMU {
-    private double latitude;
-    private double longitude;
-    private double altitude;
-    private double orientation;
+    private int currentTick;
+    private STATUS status;
+    private List<Pose> stumpedPoses;
 
-    public GPSIMU(double latitude, double longitude, double altitude, double orientation) {
-        this.latitude = latitude;
-        this.longitude = longitude;
-        this.altitude = altitude;
-        this.orientation = orientation;
+    public GPSIMU(int currentTick, STATUS status, List<Pose> stumpedPoses) {
+        this.currentTick = currentTick;
+        this.status = status;
+        this.stumpedPoses = stumpedPoses;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public int getCurrentTick() {
+        return currentTick;
     }
-
-    public double getLongitude() {
-        return longitude;
+    public void setCurrentTick(int currentTick) {
+        this.currentTick = currentTick;
     }
-
-    public double getAltitude() {
-        return altitude;
+    public STATUS getStatus() {
+        return status;
     }
-
-    public double getOrientation() {
-        return orientation;
+    public void setStatus(STATUS status) {
+        this.status = status;
     }
-
-    public void updatePosition(double newLatitude, double newLongitude, double newAltitude) {
-        this.latitude = newLatitude;
-        this.longitude = newLongitude;
-        this.altitude = newAltitude;
+    public List<Pose> getStumpedPoses() {
+        return stumpedPoses;
+    }
+    public void setStumpedPoses(List<Pose> stumpedPoses) {
+        this.stumpedPoses = stumpedPoses;
     }
 }

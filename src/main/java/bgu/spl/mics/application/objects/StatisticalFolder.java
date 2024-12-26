@@ -6,24 +6,31 @@ package bgu.spl.mics.application.objects;
  * the number of objects detected and tracked, and the number of landmarks identified.
  */
 public class StatisticalFolder {
-    private int processedFrames;
-    private double successRate;
+    private int systemRuntime;
+    private int numDetectedObjects;
+    private int numTrackedObjects;
+    private int numLandmarks;
 
-    public StatisticalFolder(int processedFrames, double successRate) {
-        this.processedFrames = processedFrames;
-        this.successRate = successRate;
+    public StatisticalFolder(int systemRuntime, int numDetectedObjects, int numTrackedObjects, int numLandmarks) {
+        this.systemRuntime = systemRuntime;
+        this.numDetectedObjects = numDetectedObjects;
+        this.numTrackedObjects = numTrackedObjects;
+        this.numLandmarks = numLandmarks;
     }
 
-    public int getProcessedFrames() {
-        return processedFrames;
+    public int getSystemRuntime() {
+        return systemRuntime;
     }
 
-    public double getSuccessRate() {
-        return successRate;
+    public int getNumDetectedObjects() {
+        return numDetectedObjects;
     }
 
-    public void updateStatistics(int newFrames, double newSuccessRate) {
-        this.processedFrames += newFrames;
-        this.successRate = newSuccessRate;
+    public int getNumTrackedObjects() {
+        return numTrackedObjects;
+    }
+
+    public int getNumLandmarks() {
+        return numLandmarks;
     }
 }

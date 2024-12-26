@@ -2,16 +2,19 @@ package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
 import bgu.spl.mics.application.objects.DetectedObject;
+import bgu.spl.mics.application.objects.StampedDetectedObjects;
 
 import java.util.List;
 
-public class DetectObjectEvent implements Event<Boolean> {
+public class DetectObjectsEvent implements Event<Boolean> {
     private String senderName;
     private  int time;
     private List<DetectedObject> detectedObjects;
 
-    public DetectObjectEvent(String senderName) {
+    public DetectObjectsEvent(List<DetectedObject> detectedObjects, String senderName, int time) {
         this.senderName = senderName;
+        this.time = time;
+        this.detectedObjects = detectedObjects;
     }
 
     public List<DetectedObject> getDetectedObjects() {

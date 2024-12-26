@@ -12,6 +12,7 @@ import bgu.spl.mics.application.objects.LiDarWorkerTracker;
  * observations.
  */
 public class LiDarService extends MicroService {
+    private LiDarWorkerTracker LiDarWorkerTracker;
 
     /**
      * Constructor for LiDarService.
@@ -19,8 +20,8 @@ public class LiDarService extends MicroService {
      * @param LiDarWorkerTracker A LiDAR Tracker worker object that this service will use to process data.
      */
     public LiDarService(LiDarWorkerTracker LiDarWorkerTracker) {
-        super("Change_This_Name");
-        // TODO Implement this
+        super("Lidar" + LiDarWorkerTracker.getId());
+        this.LiDarWorkerTracker = LiDarWorkerTracker;
     }
 
     /**
