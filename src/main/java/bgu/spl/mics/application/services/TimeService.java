@@ -1,8 +1,14 @@
 package bgu.spl.mics.application.services;
 
 import bgu.spl.mics.MicroService;
+import bgu.spl.mics.application.messages.CrashedBroadcast;
+import bgu.spl.mics.application.messages.DetectObjectsEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.objects.STATUS;
+import bgu.spl.mics.application.objects.StampedDetectedObjects;
+
+import java.util.List;
 
 /**
  * TimeService acts as the global timer for the system, broadcasting TickBroadcast messages
@@ -30,15 +36,29 @@ public class TimeService extends MicroService {
      */
     @Override
     protected void initialize() { //do we need a thread here?!
-        int currentTick = 0;
-        while (currentTick < Duration) {
-            long currentTimeMillis = System.currentTimeMillis();
-            if (System.currentTimeMillis() == currentTimeMillis + TickTime) //sends new tick broadcast every tickTime
-                sendBroadcast(new TickBroadcast(this.getName(), currentTick));
-            currentTick ++;
-        }
-        sendBroadcast(new TerminatedBroadcast(this.getName()));
-        //do we need this here or we can do it in tne microservice in the terminated
-        terminate();
+        //subscribe for time tick -> waits ticktime then sends a time tick
+        //Subscribe to TickBroadcast to process ticks
+        subscribeBroadcast(TickBroadcast.class, tick -> {
+            if (tick.getCurrentTick() <= Duration) {
+                try {
+                    Thread.sleep(TickTime);
+                } catch (InterruptedException e) {}
+                sendBroadcast(new TickBroadcast(this.getName(), tick.getCurrentTick() + 1));
+            } else {
+                sendBroadcast(new TerminatedBroadcast(this.getName()));
+            }
+        });
+        //subscribe to TerminatedBroadcast
+        subscribeBroadcast(TerminatedBroadcast.class, terminated -> {
+            terminate();
+        });
+
+        //subscribe to CrushedBroadcast
+        subscribeBroadcast(CrashedBroadcast.class, crashed -> {
+            terminate();
+        });
+
+        //start the timer
+        sendBroadcast(new TickBroadcast(this.getName(), 1));
     }
 }

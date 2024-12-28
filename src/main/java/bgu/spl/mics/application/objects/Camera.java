@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import bgu.spl.mics.application.messages.DetectObjectsEvent;
+
 import java.util.List;
 
 /**
@@ -38,5 +40,30 @@ public class Camera {
 
     public List<StampedDetectedObjects> getDetectedObjectsList() {
         return detectedObjectsList;
+    }
+}
+    public List<DetectedObject> handle_tick(int currentTime, int tickDuration) {
+        if (currentTime < frequency) {
+            try {
+                Thread.sleep(eventTime * tickDuration + frequency - currentTime * tickDuration);
+            } catch (InterruptedException e) {
+            }
+        }
+        // Retrieve cloud points from the database
+        List<TrackedObject> trackedObjects = LiDarDataBase.getInstance("").processDetectedObjects(eventTime, detectedObjects);
+
+        return trackedObjects;
+
+
+
+
+        if (camera.getStatus() == STATUS.UP) {
+            List<StampedDetectedObjects> detectedObjects = camera.getDetectedObjectsList();
+            if (detectedObjects != null) {
+                //finds the correct object according to the time
+                for (StampedDetectedObjects object : detectedObjects) {
+                    if (object.getTime() == tick.getCurrentTick() + camera.getFrequency()) {
+                        //send detected objects event
+                        DetectObjectsEvent event = new DetectObjectsEvent(object.getDetectedObjects(), this.getName(), tick.getCurrentTick());
     }
 }

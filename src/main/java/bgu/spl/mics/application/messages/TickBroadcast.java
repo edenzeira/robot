@@ -6,6 +6,7 @@ public class TickBroadcast implements Broadcast {
 
     private String senderId;
     private int currentTick;
+    private int tickDuration;
 
     public TickBroadcast(String senderId, int currentTick) {
         this.senderId = senderId;
@@ -16,7 +17,11 @@ public class TickBroadcast implements Broadcast {
         return senderId;
     }
 
-    public static int getCurrentTick() {
+    public int getCurrentTick() {
         return currentTick;
+    }
+
+    public int getTickDuration() {
+        return tickDuration;
     }
 }

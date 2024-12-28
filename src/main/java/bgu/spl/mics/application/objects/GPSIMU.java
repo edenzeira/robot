@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import bgu.spl.mics.application.messages.PoseEvent;
+
 import java.util.List;
 
 /**
@@ -34,5 +36,21 @@ public class GPSIMU {
     }
     public void setStumpedPoses(List<Pose> stumpedPoses) {
         this.stumpedPoses = stumpedPoses;
+    }
+
+    public Pose getCurrentPose(int currentTick){
+        if (getStatus() == STATUS.UP) {
+            List<Pose> PoseList = getStumpedPoses();
+            if (PoseList != null) {
+                //finds the correct pose according to the time
+                for (Pose object : PoseList) {
+                    if (object.getTime() == currentTick) {
+                        //send pose event
+                        return object;
+                    }
+                }
+            }
+        }
+        return null;
     }
 }

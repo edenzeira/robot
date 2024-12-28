@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import bgu.spl.mics.application.messages.TrackedObjectsEvent;
+
 import java.util.List;
 
 /**
@@ -38,5 +40,29 @@ public class LiDarWorkerTracker {
 
     public List<TrackedObject> getLastTrackedObjects() {
         return lastTrackedObjects;
+    }
+
+    public List<TrackedObject> handle_detect(int currentTime, int eventTime, int tickDuration, List<DetectedObject> detectedObjects) {
+        // Check if the tick matches the LiDAR frequency
+        if (currentTime < eventTime + frequency) {
+            try {
+                Thread.sleep(((long) (eventTime + frequency - currentTime) )* tickDuration);
+            } catch (InterruptedException e) {
+            }
+        }
+        // Retrieve cloud points from the database
+        List<TrackedObject> trackedObjects = LiDarDataBase.getInstance("").processDetectedObjects(eventTime, detectedObjects);
+
+        return trackedObjects;
+    }
+
+    @Override
+    public String toString() {
+        return "LiDarWorkerTracker{" +
+                "id=" + id +
+                ", frequency=" + frequency +
+                ", status=" + status +
+                ", lastTrackedObjects=" + lastTrackedObjects +
+                '}';
     }
 }

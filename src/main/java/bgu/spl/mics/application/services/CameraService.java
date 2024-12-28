@@ -47,9 +47,9 @@ public class CameraService extends MicroService {
                 if (detectedObjects != null) {
                     //finds the correct object according to the time
                     for (StampedDetectedObjects object : detectedObjects) {
-                        if (object.getTime() == TickBroadcast.getCurrentTick() + camera.getFrequency()) {
+                        if (object.getTime() == tick.getCurrentTick() + camera.getFrequency()) {
                             //send detected objects event
-                            DetectObjectsEvent event = new DetectObjectsEvent(object.getDetectedObjects(), this.getName(), TickBroadcast.getCurrentTick());
+                            DetectObjectsEvent event = new DetectObjectsEvent(object.getDetectedObjects(), this.getName(), tick.getCurrentTick());
                             sendEvent(event);
                             break;
                         }
@@ -59,11 +59,12 @@ public class CameraService extends MicroService {
     });
         //subscribe to TerminatedBroadcast //do we need to classify for each service ?? how to do it?!?!?!?!
         subscribeBroadcast(TerminatedBroadcast.class, terminated -> {
+            terminate();
         });
 
         //subscribe to CrushedBroadcast
         subscribeBroadcast(CrashedBroadcast.class, crashed -> {
-
+            terminate();
         });
 
     }

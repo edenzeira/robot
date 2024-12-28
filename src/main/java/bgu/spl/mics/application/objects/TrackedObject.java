@@ -1,5 +1,7 @@
 package bgu.spl.mics.application.objects;
 
+import java.util.List;
+
 /**
  * Represents an object tracked by the LiDAR.
  * This object includes information about the tracked object's ID, description, 
