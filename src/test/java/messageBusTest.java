@@ -51,7 +51,6 @@ public class messageBusTest{
         assertTrue(bus.getBroadcastMap().get(TickBroadcast.class).contains(service));
     }
 
-    //לתקן!!!
     @Test
     void sendEventTest(){
         Camera cam1 = new Camera(1, 3, STATUS.UP, "camera1", null);
@@ -61,11 +60,15 @@ public class messageBusTest{
         CameraService service2 = new CameraService(cam2);
         CameraService service3 = new CameraService(cam3);
         MessageBusImpl bus = MessageBusImpl.getInstance();
+        bus.register(service1);
+        bus.register(service2);
+        bus.register(service3);
         bus.subscribeEvent(PoseEvent.class, service1);
         bus.subscribeEvent(PoseEvent.class, service2);
         bus.subscribeEvent(PoseEvent.class, service3);
         int oldSize = bus.getEventsMap().get(PoseEvent.class).size();
-        bus.sendEvent(new PoseEvent("test", new Pose(1,2,3,4)));
+        PoseEvent e = new PoseEvent("test", new Pose(1,2,3,4));
+        bus.sendEvent(e);
         assertEquals(oldSize, bus.getEventsMap().get(PoseEvent.class).size());
     }
 
@@ -89,17 +92,37 @@ public class messageBusTest{
         bus.register(service);
         DetectObjectsEvent e = new DetectObjectsEvent(null,"", 5);
         bus.sendEvent(e);
-        bus.complete(e, 5); //לברר עם מרעי את עניין הפיוצ'רים
+        //bus.complete(e, 5); //לברר עם מרעי את עניין הפיוצ'רים
         assertTrue(bus.getFutureMap().get(e).isDone() == true);
     }
 
     @Test
     void unregisterTest(){
+        Camera camera = new Camera(3, 3, STATUS.UP, "camera3", null);
+        CameraService cameraService = new CameraService(camera);
+        TimeService timeService = new TimeService(3,30);
+        MessageBusImpl bus = MessageBusImpl.getInstance();
+        bus.register(cameraService);
+        bus.register(timeService);
+        int oldSize = bus.getMicroServiceMap().size();
+        bus.unregister(cameraService);
+        assertEquals(oldSize - 1, bus.getMicroServiceMap().size());
 
     }
 
     @Test
-    void awaitMessageTest(){
-
+    void awaitMessageTest() {
+        LiDarWorkerTracker lidar = new LiDarWorkerTracker(1, 2, STATUS.UP, null);
+        LiDarService service = new LiDarService(lidar);
+        MessageBusImpl bus = MessageBusImpl.getInstance();
+        bus.register(service);
+        TickBroadcast b = new TickBroadcast("test", 3);
+        bus.subscribeBroadcast(TickBroadcast.class, service);
+        bus.sendBroadcast(b);
+        try {
+            bus.awaitMessage(service);
+        }
+        catch (InterruptedException e) {}
+        assertTrue(bus.getMicroServiceMap().get(service).isEmpty());
     }
 }

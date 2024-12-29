@@ -76,10 +76,14 @@ public class Camera {
         this.camera_key = camera_key;
     }
     public String toString() {
+        String s = "";
+        if (stampedDetectedObjects != null) {
+            for (StampedDetectedObjects stampedDetectedObjects : stampedDetectedObjects)
+                s = s + stampedDetectedObjects.toString();
+        }
         return "CameraInfo{" +
                 "id=" + id +
                 ", frequency=" + frequency +
-                ", camera_key='" + camera_key + '\'' +
-                '}';
+                ", camera_key='" + camera_key + '\'' + s + '}';
     }
 }

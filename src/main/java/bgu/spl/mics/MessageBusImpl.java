@@ -104,17 +104,17 @@ public class MessageBusImpl implements MessageBus {
 
     @Override
     public void unregister(MicroService m) {
-        synchronized (eventsMap) {// to check!
+        synchronized (eventsMap) {
             for (Queue<MicroService> subscribers : eventsMap.values()) {
                 subscribers.remove(m);
             }
         }
-        synchronized (broadcastMap) { // to check!
+        synchronized (broadcastMap) {
             for (BlockingQueue<MicroService> subscribers : broadcastMap.values()) {
                 subscribers.remove(m);
             }
         }
-        synchronized (microServiceMap) { // to check!
+        synchronized (microServiceMap) {
             BlockingQueue<Message> messages = microServiceMap.get(m);
             for (Message msg: messages) {
                 if(msg instanceof Event) {
@@ -131,9 +131,7 @@ public class MessageBusImpl implements MessageBus {
         BlockingQueue<Message> messages = microServiceMap.get(m);
         if (messages == null)
             throw new IllegalStateException("The microservice" + m.getName() + "is not registered");
-
         return messages.take(); //if the queue is empty, waits until not empty
-        //we need to check if try and catch (the function throws exception)
     }
 }
 
