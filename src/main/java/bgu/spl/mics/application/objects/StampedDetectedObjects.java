@@ -27,4 +27,11 @@ public class StampedDetectedObjects {
     public void addObject(DetectedObject detectedObject) {
         detectedObjects.add(detectedObject);
     }
+
+    public String toString() {
+        return "StampedDetectedObjects{" +
+                "time=" + time +
+                ", detectedObjects=" + detectedObjects +
+                '}';
+    }
 }

@@ -66,4 +66,20 @@ public class Camera {
                         //send detected objects event
                         DetectObjectsEvent event = new DetectObjectsEvent(object.getDetectedObjects(), this.getName(), tick.getCurrentTick());
     }
+
+    public String getCamera_key() {
+        return camera_key;
+    }
+
+
+    public void setCamera_key(String camera_key) {
+        this.camera_key = camera_key;
+    }
+    public String toString() {
+        return "CameraInfo{" +
+                "id=" + id +
+                ", frequency=" + frequency +
+                ", camera_key='" + camera_key + '\'' +
+                '}';
+    }
 }

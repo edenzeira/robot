@@ -1,5 +1,5 @@
 package bgu.spl.mics.application.objects;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -11,7 +11,7 @@ public class LandMark {
     private String description;
     private List<CloudPoint> Coordinates;
 
-    public LandMark(String id, String description, List<CloudPoint> coordinates) {
+    public LandMark(String id, String description, ArrayList<CloudPoint> coordinates) {
         this.id = id;
         this.description = description;
         this.Coordinates = coordinates;

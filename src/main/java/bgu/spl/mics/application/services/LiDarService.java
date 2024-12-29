@@ -4,6 +4,7 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.CloudPoint;
 import bgu.spl.mics.application.objects.LiDarWorkerTracker;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 import bgu.spl.mics.application.objects.TrackedObject;
 
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
  * observations.
  */
 public class LiDarService extends MicroService {
-    private LiDarWorkerTracker LiDarWorkerTracker;
+    private final LiDarWorkerTracker LiDarWorkerTracker;
     int currentTime = 0;
     int tickDuration = 0;
     /**
@@ -47,6 +48,10 @@ public class LiDarService extends MicroService {
         subscribeEvent(DetectObjectsEvent.class, event -> {
             List<TrackedObject> trackedObjects =  LiDarWorkerTracker.handle_detect(currentTime, event.getTime(), tickDuration, event.getDetectedObjects());
             if(!trackedObjects.isEmpty()){
+                //update statistical folder
+                int NumTrackedObjects = StatisticalFolder.getInstance().getNumTrackedObjects();
+                StatisticalFolder.getInstance().setNumTrackedObjects(NumTrackedObjects + trackedObjects.size());
+                //send event
                 TrackedObjectsEvent e = new TrackedObjectsEvent(getName(), trackedObjects);
                 sendEvent(e);
             }

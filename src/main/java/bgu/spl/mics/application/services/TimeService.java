@@ -7,6 +7,7 @@ import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.objects.STATUS;
 import bgu.spl.mics.application.objects.StampedDetectedObjects;
+import bgu.spl.mics.application.objects.StatisticalFolder;
 
 import java.util.List;
 
@@ -35,15 +36,16 @@ public class TimeService extends MicroService {
      * Starts broadcasting TickBroadcast messages and terminates after the specified duration.
      */
     @Override
-    protected void initialize() { //do we need a thread here?!
+    protected void initialize() {
         //subscribe for time tick -> waits ticktime then sends a time tick
         //Subscribe to TickBroadcast to process ticks
         subscribeBroadcast(TickBroadcast.class, tick -> {
             if (tick.getCurrentTick() <= Duration) {
                 try {
                     Thread.sleep(TickTime);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException ignored) {}
                 sendBroadcast(new TickBroadcast(this.getName(), tick.getCurrentTick() + 1));
+                StatisticalFolder.getInstance().setSystemRuntime(tick.getCurrentTick()); //update the statisticalFolder
             } else {
                 sendBroadcast(new TerminatedBroadcast(this.getName()));
             }

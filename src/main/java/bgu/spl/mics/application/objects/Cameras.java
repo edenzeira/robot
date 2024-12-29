@@ -3,10 +3,10 @@ package bgu.spl.mics.application.objects;
 import java.util.Arrays;
 
 public class Cameras {
-    private CameraInfo[] CamerasConfigurations;
+    private Camera[] CamerasConfigurations;
     private String camera_datas_path;
 
-    public CameraInfo[] getCamerasConfigurations() {
+    public Camera[] getCamerasConfigurations() {
         return CamerasConfigurations;
     }
 
@@ -14,7 +14,7 @@ public class Cameras {
         return camera_datas_path;
     }
 
-    public void setCamerasConfigurations(CameraInfo[] camerasConfigurations) {
+    public void setCamerasConfigurations(Camera[] camerasConfigurations) {
         CamerasConfigurations = camerasConfigurations;
     }
 

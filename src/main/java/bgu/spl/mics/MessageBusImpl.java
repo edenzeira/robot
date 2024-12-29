@@ -16,11 +16,13 @@ import java.util.concurrent.LinkedBlockingQueue;
  * All other methods and members you add the class must be private.
  */
 public class MessageBusImpl implements MessageBus {
-    private static MessageBusImpl messageBus = new MessageBusImpl();
     private ConcurrentHashMap<MicroService, BlockingQueue<Message>> microServiceMap;
     private ConcurrentHashMap<Class<? extends Event>, BlockingQueue<MicroService>> eventsMap;
     private ConcurrentHashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> broadcastMap;
     private ConcurrentHashMap<Event, Future> futureMap;
+    private static class MessageBusImplHolder {
+        private static MessageBusImpl instance = new MessageBusImpl();
+    }
 
     private MessageBusImpl() {
         microServiceMap = new ConcurrentHashMap<>();
@@ -29,25 +31,39 @@ public class MessageBusImpl implements MessageBus {
         futureMap = new ConcurrentHashMap<>();
     }
 
-    public static MessageBusImpl getInstance() {
-        return messageBus;
+    public static MessageBusImpl getInstance() { return MessageBusImplHolder.instance; }
+
+    //לשנות מפאבליק!!!!!!!!!!!!!!!!
+    public ConcurrentHashMap<MicroService, BlockingQueue<Message>> getMicroServiceMap() {
+        return microServiceMap;
+    }
+
+    public ConcurrentHashMap<Class<? extends Event>, BlockingQueue<MicroService>> getEventsMap() {
+        return eventsMap;
+    }
+
+    public ConcurrentHashMap<Class<? extends Broadcast>, BlockingQueue<MicroService>> getBroadcastMap() {
+        return broadcastMap;
+    }
+
+    public ConcurrentHashMap<Event, Future> getFutureMap() {
+        return futureMap;
     }
 
     @Override
     public <T> void subscribeEvent(Class<? extends Event<T>> type, MicroService m) {
-        eventsMap.computeIfAbsent(type, k -> new LinkedBlockingQueue<>()).add(m); //ConcurrentLinkedQueue is thread safe
+        eventsMap.computeIfAbsent(type, k -> new LinkedBlockingQueue<>()).add(m);
     }
 
 
     @Override
     public void subscribeBroadcast(Class<? extends Broadcast> type, MicroService m) {
-        broadcastMap.computeIfAbsent(type, k -> new LinkedBlockingQueue<>()).add(m); //CopyOnWriteArrayList is thread safe
+        broadcastMap.computeIfAbsent(type, k -> new LinkedBlockingQueue<>()).add(m);
     }
 
 
     @Override
     public <T> void complete(Event<T> e, T result) {
-        // TODO Auto-generated method stub
         futureMap.get(e).resolve(result);
     }
 
@@ -74,7 +90,6 @@ public class MessageBusImpl implements MessageBus {
                 MicroService m = subscribers.poll();
                 microServiceMap.get(m).add(e);
                 subscribers.add(m);
-                //how to return future???? like a queen
                 return future;
             }
         }
