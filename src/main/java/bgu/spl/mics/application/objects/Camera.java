@@ -2,6 +2,7 @@ package bgu.spl.mics.application.objects;
 
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -9,16 +10,18 @@ import java.util.List;
  * Responsible for detecting objects in the environment.
  */
 public class Camera {
-    private int id;
-    private int frequency;
+    private final int id;
+    private final int frequency;
     private STATUS status;
-    private List<StampedDetectedObjects> detectedObjectsList;
+    private String camera_key;
+    private final List<StampedDetectedObjects> stampedDetectedObjects;
 
-    public Camera(int id, int frequency, STATUS status, List<StampedDetectedObjects> detectedObjectsList) {
+    public Camera(int id, int frequency, STATUS status,String camera_key, List<StampedDetectedObjects> stampedDetectedObjects) {
         this.id = id;
         this.frequency = frequency;
         this.status = status;
-        this.detectedObjectsList = detectedObjectsList;
+        this.camera_key = camera_key;
+        this.stampedDetectedObjects = stampedDetectedObjects;
     }
 
     public int getId() {
@@ -38,33 +41,19 @@ public class Camera {
     }
 
 
-    public List<StampedDetectedObjects> getDetectedObjectsList() {
-        return detectedObjectsList;
+    public List<StampedDetectedObjects> getStampedDetectedObjects() {
+        return stampedDetectedObjects;
     }
-}
-    public List<DetectedObject> handle_tick(int currentTime, int tickDuration) {
-        if (currentTime < frequency) {
-            try {
-                Thread.sleep(eventTime * tickDuration + frequency - currentTime * tickDuration);
-            } catch (InterruptedException e) {
+
+    public List<DetectedObject> handle_tick(int currentTime) {
+        if (stampedDetectedObjects != null) {
+            // Retrieves a detectedObjectsList according to the time and frequancy
+            for (StampedDetectedObjects list : stampedDetectedObjects) {
+                if (list.getTime() + frequency == currentTime)
+                    return list.getDetectedObjects();
             }
         }
-        // Retrieve cloud points from the database
-        List<TrackedObject> trackedObjects = LiDarDataBase.getInstance("").processDetectedObjects(eventTime, detectedObjects);
-
-        return trackedObjects;
-
-
-
-
-        if (camera.getStatus() == STATUS.UP) {
-            List<StampedDetectedObjects> detectedObjects = camera.getDetectedObjectsList();
-            if (detectedObjects != null) {
-                //finds the correct object according to the time
-                for (StampedDetectedObjects object : detectedObjects) {
-                    if (object.getTime() == tick.getCurrentTick() + camera.getFrequency()) {
-                        //send detected objects event
-                        DetectObjectsEvent event = new DetectObjectsEvent(object.getDetectedObjects(), this.getName(), tick.getCurrentTick());
+        return null;
     }
 
     public String getCamera_key() {

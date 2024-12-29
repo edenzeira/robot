@@ -16,7 +16,7 @@ import java.util.List;
  * and broadcasting PoseEvents at every tick.
  */
 public class PoseService extends MicroService {
-    private GPSIMU gpsimu;
+    private final GPSIMU gpsimu;
 
     /**
      * Constructor for PoseService.

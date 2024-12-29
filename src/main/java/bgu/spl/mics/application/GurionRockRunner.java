@@ -16,6 +16,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The main entry point for the GurionRock Pro Max Ultra Over 9000 simulation.
@@ -36,68 +37,67 @@ public class GurionRockRunner {
     public static void main(String[] args) {
         System.out.println("eden and may are the best");
         try {
-        //Parse configuration file.
+            //Parse configuration file.
             ConfigFile configFile;
             Gson gson = new Gson();
-            Reader reader = Files.newBufferedReader(Paths.get(args[0]));
+            String configFilePath = "./configuration_file.json";
+            Reader reader = Files.newBufferedReader(Paths.get(configFilePath));
             configFile = gson.fromJson(reader, ConfigFile.class);
             reader.close();
-
-            System.out.println(configFile.toString());
-
-
-            Path configDir = Paths.get(args[0]).getParent();
-
-            // Step 3: Resolve the poseJsonFile path
-            Path poseFilePath = configDir.resolve(configFile.getPoseJsonFile());
-            System.out.println("Resolved Pose JSON Path: " + poseFilePath);
-
-            // Step 4: Read the pose data from the resolved path
-            Reader poseReader = Files.newBufferedReader(poseFilePath);
+            Path configDir = Paths.get(configFilePath).getParent();
 
 
-            Type poseListType = new TypeToken<List<Pose>>() {}.getType();
-            List<Pose> poses = gson.fromJson(poseReader, poseListType);
-            poseReader.close();
-
-            // Step 5: Print the parsed pose data for verification
-            System.out.println("Parsed Pose Data: " + poses);
-
-
-           /*
-            // Read camera data from `camera_data.json`
-           // String cameraDataPath = Paths.get(args[0]).getParent().resolve(configFile.getCameras().getCamera_datas_path()).toString();
-          //  FileReader cameraReader = new FileReader(cameraDataPath);
+            // Parse camera data from camera JSON file
+            Path cameraFilePath = configDir.resolve(configFile.getCameras().getCamera_datas_path());
+            Reader cameraReader = Files.newBufferedReader(cameraFilePath);
+            Type cameraMapType = new TypeToken<Map<String, List<StampedDetectedObjects>>>() {}.getType();
+            Map<String, List<StampedDetectedObjects>> cameras = gson.fromJson(cameraReader, cameraMapType);
+            cameraReader.close();
+            System.out.println("Parsed Camera Data: " + cameras);
 
             // Parse Pose data from pose JSON file
-            FileReader poseReader = new FileReader(configFile.getPoseJsonFile());
-            Pose initialPose = gson.fromJson(poseReader, Pose.class);
+            Path poseFilePath = configDir.resolve(configFile.getPoseJsonFile());
+            Reader poseReader = Files.newBufferedReader(poseFilePath);
             Type poseListType = new TypeToken<List<Pose>>() {}.getType();
             List<Pose> stumpedPoses = gson.fromJson(poseReader, poseListType);
             poseReader.close();
-
-            // Parse LiDAR data from lidar_data.json
-            String lidarDataPath = configFile.getLidarWorkers().getLidars_data_path();
-            FileReader lidarReader = new FileReader(lidarDataPath);
+            System.out.println("Parsed Pose Data: " + stumpedPoses);
 
             // Initialize system components and services.
+
+            for (Pose pose : stumpedPoses) {
+                System.out.println("Pose " + pose.toString() + '\'' );
+            }
 
             // creating TimeService and PoseService
             List<Thread> threads = new ArrayList<>();
             threads.add(new Thread(new TimeService(configFile.getTickTime(), configFile.getDuration())));
             GPSIMU gps = new GPSIMU(0, STATUS.UP , stumpedPoses);
+            System.out.println("gps " + gps.toString());
             threads.add(new Thread(new PoseService(gps)));
 
             //creating CameraServices
-            List <Camera> cameras = new ArrayList<>();
-            Camera[] cameraConfigurations = configFile.getCameras().getCamerasConfigurations();
-            for (Camera cameraInfo : cameraConfigurations){
+            List<Camera> camerasObj = new ArrayList<>();
+            for (Camera cameraInfo : configFile.getCameras().getCamerasConfigurations()){
                 Camera cameraObj = new Camera(cameraInfo.getId() , cameraInfo.getFrequency() , STATUS.UP , cameraInfo.getCamera_key() , cameraInfo.getStampedDetectedObjects());
-                cameras.add(cameraObj);
+                camerasObj.add(cameraObj);
                 System.out.println(cameraObj.toString());
                 threads.add(new Thread(new CameraService(cameraObj)));
             }
 
+            /*
+            // Parse LiDAR data from lidar_data.json
+            Path lidarFilePath = configDir.resolve(configFile.getLidarWorkers().getLidars_data_path());
+            Reader lidarReader = Files.newBufferedReader(lidarFilePath);
+            Type lidarListType = new TypeToken<List<LiDarWorkerTracker>>() {}.getType();
+            List<LiDarWorkerTracker> lidarData = gson.fromJson(lidarReader, lidarListType);
+            lidarReader.close();
+            System.out.println("Parsed LiDAR Data: " + lidarData);
+
+             */
+
+
+           /*
             //creating Lidar workers
             List <LiDarWorkerTracker> LiDarWorkers = new ArrayList<>();
             LiDarWorkerTracker[] LidarConfigurations = configFile.getLidarWorkers().getLidarConfigurations();

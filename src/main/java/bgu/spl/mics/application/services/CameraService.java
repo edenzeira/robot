@@ -18,7 +18,7 @@ import java.util.List;
  * the system's StatisticalFolder upon sending its observations.
  */
 public class CameraService extends MicroService {
-    private Camera camera;
+    private final Camera camera;
     /**
      * Constructor for CameraService.
      *
@@ -40,21 +40,19 @@ public class CameraService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, tick -> {
             //if camera is operational, retrieve list of stamped objects
             if (camera.getStatus() == STATUS.UP) {
-                List<StampedDetectedObjects> detectedObjects = camera.getDetectedObjectsList();
-                if (detectedObjects != null) {
-                    //finds the correct object according to the time
-                    for (StampedDetectedObjects object : detectedObjects) {
-                        if (object.getTime() == tick.getCurrentTick() + camera.getFrequency()) {
-                            //send detected objects event
-                            DetectObjectsEvent event = new DetectObjectsEvent(object.getDetectedObjects(), this.getName(), tick.getCurrentTick());
-                            sendEvent(event);
-                            break;
-                        }
-                    }
+                List<DetectedObject> detectedObjects = camera.handle_tick(tick.getCurrentTick());
+                if (detectedObjects != null && !detectedObjects.isEmpty()) {
+                    //update the statisticalFolder
+                    int NumDetectedObjects = StatisticalFolder.getInstance().getNumDetectedObjects();
+                    StatisticalFolder.getInstance().setNumDetectedObjects(NumDetectedObjects + detectedObjects.size());
+                    //send detected objects event
+                    DetectObjectsEvent e = new DetectObjectsEvent(detectedObjects, this.getName(), tick.getCurrentTick());
+                    sendEvent(e);
                 }
             }
     });
-        //subscribe to TerminatedBroadcast //do we need to classify for each service ?? how to do it?!?!?!?!
+
+        //subscribe to TerminatedBroadcast
         subscribeBroadcast(TerminatedBroadcast.class, terminated -> {
             terminate();
         });

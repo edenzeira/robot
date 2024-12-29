@@ -12,7 +12,11 @@ public class PoseEvent implements Event<String> {
         this.pose = pose;
     }
 
-    public String getObjectId() {
+    public String getSenderName() {
         return senderName;
+    }
+
+    public Pose getPose() {
+        return pose;
     }
 }

@@ -1,5 +1,11 @@
 package bgu.spl.mics.application.objects;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -8,18 +14,30 @@ import java.util.*;
  * Implements the Singleton pattern to ensure a single instance of FusionSlam exists.
  */
 public class FusionSlam {
-    private List<LandMark> landMarks;
-    private List<Pose> Poses;
+    private ArrayList<LandMark> landMarks;
+    private List<Pose> poses;
     // Singleton instance holder
     private static class FusionSlamHolder {
         private static FusionSlam instance = new FusionSlam();
 
     }
 
-        private FusionSlam() {
-            this.landMarks = new ArrayList<LandMark>() ;
-            this.Poses = new ArrayList<Pose>() ;
+    private FusionSlam() {
+        this.landMarks = new ArrayList<LandMark>() ;
+        this.poses = new ArrayList<Pose>() ;
+    }
+
+    /*public void writeToJson(Path filePath) throws IOException {
+        // Convert the landmarks to JSON
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        String json = gson.toJson(landMarks);
+
+        // Write JSON to file
+        try (FileWriter writer = new FileWriter(filePath)) {
+            writer.write(json);
+            System.out.println("Landmarks JSON written successfully to: " + filePath);
         }
+    }*/
 
     public static FusionSlam getInstance() {
         return FusionSlamHolder.instance;

@@ -8,19 +8,7 @@ import java.util.List;
  * It provides access to cloud point data and other relevant information for tracked objects.
  */
 public class LiDarDataBase {
-    private List<StampedCloudPoints> cloudPoints;
-
-    public List<TrackedObject> processDetectedObjects(int eventTime, List<DetectedObject> detectedObjects) {
-        List<TrackedObject> trackedObjects = new ArrayList<TrackedObject>();
-        for(DetectedObject detectedObject : detectedObjects) {
-            for(StampedCloudPoints cloudPoint : cloudPoints) {
-                if(detectedObject.getId().equals(cloudPoint.getId()) && eventTime == cloudPoint.getTime() ) {
-                    trackedObjects.add(new TrackedObject(detectedObject.getId(), eventTime, detectedObject.getDescription(), cloudPoint.getPoints()));
-                }
-            }
-        }
-        return trackedObjects;
-    }
+    private final List<StampedCloudPoints> cloudPoints;
 
     private static class LiDarDataBaseHolder {
         private static LiDarDataBase instance = null;
@@ -48,6 +36,18 @@ public class LiDarDataBase {
 
     public List<StampedCloudPoints> getCloudPoints() {
         return cloudPoints;
+    }
+
+    public List<TrackedObject> processDetectedObjects(int eventTime, List<DetectedObject> detectedObjects) {
+        List<TrackedObject> trackedObjects = new ArrayList<TrackedObject>();
+        for(DetectedObject detectedObject : detectedObjects) {
+            for(StampedCloudPoints points : cloudPoints) {
+                if(detectedObject.getId().equals(points.getId()) && eventTime == points.getTime() ) {
+                    trackedObjects.add(new TrackedObject(detectedObject.getId(), eventTime, detectedObject.getDescription(), points.getPoints()));
+                }
+            }
+        }
+        return trackedObjects;
     }
 }
 

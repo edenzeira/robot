@@ -37,6 +37,8 @@ public class Pose {
         return "Pose{" +
                 "x=" + x +
                 ", y=" + y +
+                ", yaw=" + yaw +
+                ", time=" + time +
                 '}';
     }
 }

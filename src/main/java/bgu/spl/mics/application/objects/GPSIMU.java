@@ -53,4 +53,7 @@ public class GPSIMU {
         }
         return null;
     }
+    public String toString() {
+        return "curruntTick " + currentTick +" " +  "stumpedPoses " + stumpedPoses;
+    }
 }
