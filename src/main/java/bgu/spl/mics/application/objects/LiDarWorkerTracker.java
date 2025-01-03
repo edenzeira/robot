@@ -65,4 +65,15 @@ public class LiDarWorkerTracker {
                 ", lastTrackedObjects=" + lastTrackedObjects +
                 '}';
     }
+
+    public void updateStatus(){
+        LiDarDataBase data = LiDarDataBase.getInstance("");
+        if(data.getTaskCounter() == data.getCloudPoints().size()){
+            status = STATUS.DOWN;
+        }
+    }
+
+    public void setLidarsLastFrame(List<TrackedObject> lastTrackedObjects) {
+        this.lastTrackedObjects = lastTrackedObjects;
+    }
 }

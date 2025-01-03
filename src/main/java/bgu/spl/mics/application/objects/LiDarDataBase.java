@@ -19,6 +19,11 @@ import java.util.List;
  */
 public class LiDarDataBase {
     private final List<StampedCloudPoints> cloudPoints;
+    private int taskCounter = 0;
+
+    public int getTaskCounter() {
+        return taskCounter;
+    }
 
     private static class LiDarDataBaseHolder {
         private static LiDarDataBase instance = null;
@@ -61,6 +66,7 @@ public class LiDarDataBase {
             for(StampedCloudPoints points : cloudPoints) {
                 if(detectedObject.getId().equals(points.getId()) && eventTime == points.getTime() ) {
                     trackedObjects.add(new TrackedObject(detectedObject.getId(), eventTime, detectedObject.getDescription(), points.getPoints()));
+                    taskCounter++;
                 }
             }
         }
