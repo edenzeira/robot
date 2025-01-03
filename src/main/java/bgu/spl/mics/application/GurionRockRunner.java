@@ -82,8 +82,9 @@ public class GurionRockRunner {
             }
 
             //initialize the time service at the end
-            threads.add(new Thread(new TimeService(configFile.getTickTime()*1000, configFile.getDuration())));
-            //to make it faster : threads.add(new Thread(new TimeService(configFile.getTickTime(), configFile.getDuration())));
+            //threads.add(new Thread(new TimeService(configFile.getTickTime()*1000, configFile.getDuration())));
+            //to make it faster
+            threads.add(new Thread(new TimeService(configFile.getTickTime(), configFile.getDuration())));
             GPSIMU gps = new GPSIMU(0, STATUS.UP , stumpedPoses);
             threads.add(new Thread(new PoseService(gps)));
             numOfThreads++;

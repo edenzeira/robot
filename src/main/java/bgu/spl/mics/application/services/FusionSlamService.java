@@ -47,8 +47,14 @@ public class FusionSlamService extends MicroService {
         //Subscribe to TrackedObjectsEvent
         subscribeEvent(TrackedObjectsEvent.class, event -> {
             List<TrackedObject> list = event.getTrackedObjects();
-            for (TrackedObject o : list) {
-                fusionSlam.handle_trackedObjectEvent(o);
+            Pose robotP = fusionSlam.isPoseExist(list.get(0));
+            if (robotP.equals(new Pose(-1,-1,-1,-1))) {  //check if the pose already updated
+                TrackedObjectsEvent e = new TrackedObjectsEvent(this.getName(), list);
+                sendEvent(e);
+            }
+            else {
+                for (TrackedObject o : list)
+                    fusionSlam.handle_trackedObjectEvent(robotP, o);
             }
         });
 

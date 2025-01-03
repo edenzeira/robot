@@ -111,17 +111,20 @@ public class FusionSlam {
         return new CloudPoint(xGlobal, yGlobal);
     }
 
-
-    public void handle_trackedObjectEvent(TrackedObject o) {
+    public Pose isPoseExist(TrackedObject o){
         //finds the relevant pose of the robot according to the time
-        Pose robotP = new Pose(0,0,0,0);
+        Pose robotP = new Pose(-1,-1,-1,-1);
         for (Pose p : poses){
             if (o.getTime() == p.getTime()){
                 robotP = p;
                 break;
             }
         }
+        return robotP;
+    }
 
+
+    public void handle_trackedObjectEvent(Pose robotP , TrackedObject o) {
         //calculates for each cloud point of the object the global point
         ArrayList<CloudPoint> globalCoordinates = new ArrayList<CloudPoint>();
         for (CloudPoint cp : o.getCoordinates()){
