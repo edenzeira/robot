@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class CameraTest {
 
@@ -24,6 +24,13 @@ public class CameraTest {
         stampedList.add(stamped1);
         stampedList.add(stamped2);
         Camera camera = new Camera(1, 2, STATUS.UP, "camera1", stampedList);
-        assertEquals(stamped2.getDetectedObjects(), camera.handle_tick(4));
+        assertEquals(stamped2.getDetectedObjects(), camera.handle_tick(4).getDetectedObjects());
+        assertNull(camera.handle_tick(7));
+    }
+
+    @Test
+    public void handle_tickTest2() {
+        Camera camera = new Camera(1, 2, STATUS.UP, "camera1", null);
+        assertNull(camera.handle_tick(3));
     }
 }

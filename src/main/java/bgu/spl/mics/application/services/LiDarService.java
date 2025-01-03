@@ -1,11 +1,9 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Broadcast;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
-import bgu.spl.mics.application.objects.CloudPoint;
-import bgu.spl.mics.application.objects.LiDarWorkerTracker;
-import bgu.spl.mics.application.objects.StatisticalFolder;
-import bgu.spl.mics.application.objects.TrackedObject;
+import bgu.spl.mics.application.objects.*;
 
 import java.util.List;
 
@@ -47,14 +45,39 @@ public class LiDarService extends MicroService {
         // Subscribe to DetectObjectsEvent
         subscribeEvent(DetectObjectsEvent.class, event -> {
             List<TrackedObject> trackedObjects =  LiDarWorkerTracker.handle_detect(currentTime, event.getTime(), tickDuration, event.getDetectedObjects());
+            StatisticalFolder folder = StatisticalFolder.getInstance();
             if(!trackedObjects.isEmpty()){
+                //handle errors
+                int counter = 0;
+                for (TrackedObject o : trackedObjects) {
+                    if (o.getId().equals("ERROR")){
+                        LiDarWorkerTracker.setStatus(STATUS.ERROR);
+                        CrashedBroadcast b = new CrashedBroadcast(LiDarWorkerTracker.getId(), "LiDar disconnection", "LiDar" + LiDarWorkerTracker.getId());
+                        sendBroadcast(b);
+                        break;
+                    }
+                    else{ counter++; }
+                }
                 //update statistical folder
-                int NumTrackedObjects = StatisticalFolder.getInstance().getNumTrackedObjects();
-                StatisticalFolder.getInstance().setNumTrackedObjects(NumTrackedObjects + trackedObjects.size());
-                //send event
-                TrackedObjectsEvent e = new TrackedObjectsEvent(getName(), trackedObjects);
-                sendEvent(e);
+                int NumTrackedObjects = folder.getNumTrackedObjects();
+                folder.setNumTrackedObjects(NumTrackedObjects + counter);
             }
+                //send event
+                if(LiDarWorkerTracker.getStatus() == STATUS.UP) {
+                    TrackedObjectsEvent e = new TrackedObjectsEvent(getName(), trackedObjects);
+                    sendEvent(e);
+                    LiDarWorkerTracker.setLidarsLastFrame(trackedObjects);
+                    LiDarWorkerTracker.updateStatus();
+                }
+                if(LiDarWorkerTracker.getStatus() == STATUS.DOWN) {
+                    FusionSlam.getInstance().reduceNumOfUpThreads();
+                    System.out.println("lidar:the time is: " + event.getTime() +" "+ FusionSlam.getInstance().getNumOfUpThreads());
+                    if (FusionSlam.getInstance().getNumOfUpThreads() == 0) {
+                        Broadcast b = new TerminatedBroadcast("Lidar");
+                        sendBroadcast(b);
+                    }
+                    terminate();
+                }
         });
 
         //subscribe to TerminatedBroadcast
@@ -64,6 +87,7 @@ public class LiDarService extends MicroService {
 
         //subscribe to CrushedBroadcast
         subscribeBroadcast(CrashedBroadcast.class, crashed -> {
+            StatisticalFolder.getInstance().updateLidarsLastFrame(LiDarWorkerTracker.getLastTrackedObjects() , LiDarWorkerTracker.getId());
             terminate();
         });
     }

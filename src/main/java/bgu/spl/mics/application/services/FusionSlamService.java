@@ -1,16 +1,8 @@
 package bgu.spl.mics.application.services;
-
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
-import bgu.spl.mics.application.objects.CloudPoint;
-import bgu.spl.mics.application.objects.FusionSlam;
-import bgu.spl.mics.application.objects.StatisticalFolder;
-import bgu.spl.mics.application.objects.TrackedObject;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import bgu.spl.mics.application.objects.*;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -27,7 +19,8 @@ import java.util.Map;
 public class FusionSlamService extends MicroService {
     private FusionSlam fusionSlam;
     int currentTime = 0;
-    int tickDuration = 0;
+    int tickDuration = 0;;
+
     /**
      * Constructor for FusionSlamService.
      *
@@ -68,24 +61,23 @@ public class FusionSlamService extends MicroService {
 
         //Subscribe to TerminatedBroadcast to process ticks
         subscribeBroadcast(TerminatedBroadcast.class, terminated -> {
-           /* try {
-                Path configDir = Paths.get(configuration_file.json).getParent();
-                Path outputFilePath = configDir.resolve("output_file.json");
-                fusionSlam.writeToJson(configFilePath);
-                StatisticalFolder.getInstance().writeToJson(configFilePath);
-                //is it ok to write from 2 different places to the same json file??
-                //add the errors when we will figure in out
-                System.out.println("JSON file written successfully.");
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Failed to write JSON file.");
-            }*/
-            terminate();
+                StatisticalFolder.getInstance().setPosesLastFrame();
+                StatisticalFolder.getInstance().setCamerasLastFrame();
+                StatisticalFolder.getInstance().setLidarsLastFrame();
+                StatisticalFolder.getInstance().setFaultySensor(null);
+                StatisticalFolder.getInstance().setErrorDescription(null);
+                StatisticalFolder.getInstance().setSystemRuntime(currentTime);
+                System.out.println("the time is: " + currentTime);
+                fusionSlam.outputFile();
+                terminate();
         });
 
         //subscribe to CrushedBroadcast
         subscribeBroadcast(CrashedBroadcast.class, crashed -> {
-        //outputFile
+            StatisticalFolder.getInstance().setErrorDescription(crashed.getErrorDescription());
+            StatisticalFolder.getInstance().setFaultySensor(crashed.getFaultySensor());
+            fusionSlam.outputFile();
+            terminate();
         });
     }
 }

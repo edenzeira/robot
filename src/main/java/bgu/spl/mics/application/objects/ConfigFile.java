@@ -2,7 +2,7 @@ package bgu.spl.mics.application.objects;
 
 public class ConfigFile {
     private Cameras Cameras;
-    private LidarWorkers LidarWorkers;
+    private LidarWorkers LiDarWorkers;
     private String poseJsonFile;
     private int TickTime;
     private int Duration;
@@ -12,7 +12,7 @@ public class ConfigFile {
     }
 
     public LidarWorkers getLidarWorkers() {
-        return LidarWorkers;
+        return LiDarWorkers;
     }
 
     public String getPoseJsonFile() {
@@ -32,7 +32,7 @@ public class ConfigFile {
     }
 
     public void setLidarWorkers(LidarWorkers lidarWorkers) {
-        LidarWorkers = lidarWorkers;
+        LiDarWorkers = lidarWorkers;
     }
 
     public void setPoseJsonFile(String poseJsonFile) {
@@ -51,7 +51,7 @@ public class ConfigFile {
     public String toString() {
         return "ConfigFile{" +
                 "Cameras=" + Cameras +
-                ", LidarWorkers=" + LidarWorkers +
+                ", LidarWorkers=" + LiDarWorkers +
                 ", poseJsonFile='" + poseJsonFile + '\'' +
                 ", TickTime=" + TickTime +
                 ", Duration=" + Duration +

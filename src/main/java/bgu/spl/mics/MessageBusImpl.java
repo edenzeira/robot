@@ -33,7 +33,7 @@ public class MessageBusImpl implements MessageBus {
 
     public static MessageBusImpl getInstance() { return MessageBusImplHolder.instance; }
 
-    //לשנות מפאבליק!!!!!!!!!!!!!!!!
+    //getters for the test unit
     public ConcurrentHashMap<MicroService, BlockingQueue<Message>> getMicroServiceMap() {
         return microServiceMap;
     }

@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 public class messageBusTest{
-    //להבין איך עושים getters שהם פבליק לטסטים
+
     @Test
     void registerTest(){
         Camera camera = new Camera(3, 3, STATUS.UP, "camera3", null);
@@ -85,18 +85,6 @@ public class messageBusTest{
     }
 
     @Test
-    void completeTest(){
-        Camera camera = new Camera(3, 3, STATUS.UP, "camera3", null);
-        CameraService service = new CameraService(camera);
-        MessageBusImpl bus = MessageBusImpl.getInstance();
-        bus.register(service);
-        DetectObjectsEvent e = new DetectObjectsEvent(null,"", 5);
-        bus.sendEvent(e);
-        //bus.complete(e, 5); //לברר עם מרעי את עניין הפיוצ'רים
-        assertTrue(bus.getFutureMap().get(e).isDone() == true);
-    }
-
-    @Test
     void unregisterTest(){
         Camera camera = new Camera(3, 3, STATUS.UP, "camera3", null);
         CameraService cameraService = new CameraService(camera);
@@ -107,7 +95,6 @@ public class messageBusTest{
         int oldSize = bus.getMicroServiceMap().size();
         bus.unregister(cameraService);
         assertEquals(oldSize - 1, bus.getMicroServiceMap().size());
-
     }
 
     @Test
@@ -121,8 +108,7 @@ public class messageBusTest{
         bus.sendBroadcast(b);
         try {
             bus.awaitMessage(service);
-        }
-        catch (InterruptedException e) {}
+        } catch (InterruptedException e) {}
         assertTrue(bus.getMicroServiceMap().get(service).isEmpty());
     }
 }

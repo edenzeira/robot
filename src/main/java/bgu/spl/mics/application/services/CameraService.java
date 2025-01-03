@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Broadcast;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.DetectObjectsEvent;
@@ -40,14 +41,40 @@ public class CameraService extends MicroService {
         subscribeBroadcast(TickBroadcast.class, tick -> {
             //if camera is operational, retrieve list of stamped objects
             if (camera.getStatus() == STATUS.UP) {
-                List<DetectedObject> detectedObjects = camera.handle_tick(tick.getCurrentTick());
-                if (detectedObjects != null && !detectedObjects.isEmpty()) {
+                StampedDetectedObjects s = camera.handle_tick(tick.getCurrentTick());
+
+                if (s != null && !s.getDetectedObjects().isEmpty()) {
+                    //handle errors
+                    int counter = 0; //count the objects until the error
+                    for (DetectedObject o : s.getDetectedObjects()) {
+                        if (o.getId().equals("ERROR")){
+                            camera.setStatus(STATUS.ERROR);
+                            CrashedBroadcast b = new CrashedBroadcast(camera.getId(), o.getDescription(), "Camera" + camera.getId());
+                            sendBroadcast(b);
+                            break;
+                        }
+                        else{ counter++; }
+                    }
                     //update the statisticalFolder
-                    int NumDetectedObjects = StatisticalFolder.getInstance().getNumDetectedObjects();
-                    StatisticalFolder.getInstance().setNumDetectedObjects(NumDetectedObjects + detectedObjects.size());
+                    StatisticalFolder folder = StatisticalFolder.getInstance();
+                    int NumDetectedObjects = folder.getNumDetectedObjects();
+                    folder.setNumDetectedObjects(NumDetectedObjects + counter);
                     //send detected objects event
-                    DetectObjectsEvent e = new DetectObjectsEvent(detectedObjects, this.getName(), tick.getCurrentTick());
-                    sendEvent(e);
+                    if (camera.getStatus() == STATUS.UP) {
+                        camera.setLastFrame(s);
+                        DetectObjectsEvent e = new DetectObjectsEvent(s.getDetectedObjects(), this.getName(), tick.getCurrentTick());
+                        sendEvent(e);
+                        camera.updateStatus();
+                    }
+                    if (camera.getStatus() == STATUS.DOWN){
+                        FusionSlam.getInstance().reduceNumOfUpThreads();
+                        System.out.println("camera:the time is: " + tick.getCurrentTick() +" "+ FusionSlam.getInstance().getNumOfUpThreads());
+                        if (FusionSlam.getInstance().getNumOfUpThreads() == 0) {
+                            Broadcast b = new TerminatedBroadcast("Cam");
+                            sendBroadcast(b);
+                        }
+                        terminate();
+                    }
                 }
             }
     });
@@ -59,6 +86,7 @@ public class CameraService extends MicroService {
 
         //subscribe to CrushedBroadcast
         subscribeBroadcast(CrashedBroadcast.class, crashed -> {
+            StatisticalFolder.getInstance().updateCamerasLastFrame(camera.getLastFrame() , camera.getCamera_key());
             terminate();
         });
 

@@ -22,18 +22,24 @@ public class GPSIMU {
     public int getCurrentTick() {
         return currentTick;
     }
+
     public void setCurrentTick(int currentTick) {
         this.currentTick = currentTick;
     }
+
     public STATUS getStatus() {
         return status;
     }
-    public void setStatus(STATUS status) {
-        this.status = status;
+
+    public void updateStatus(int currentTick) {
+        if (stumpedPoses.size() == currentTick)
+            this.status = STATUS.DOWN;
     }
+
     public List<Pose> getStumpedPoses() {
         return stumpedPoses;
     }
+
     public void setStumpedPoses(List<Pose> stumpedPoses) {
         this.stumpedPoses = stumpedPoses;
     }

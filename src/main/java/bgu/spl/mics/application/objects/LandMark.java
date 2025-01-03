@@ -9,10 +9,9 @@ import java.util.List;
 public class LandMark {
     private String id;
     private String description;
-    private ArrayList<CloudPoint> coordinates;
-    private double avarageCounter = 1;
+    private List<CloudPoint> coordinates;
 
-    public LandMark(String id, String description, ArrayList<CloudPoint> coordinates) {
+    public LandMark(String id, String description, List<CloudPoint> coordinates) {
         this.id = id;
         this.description = description;
         this.coordinates = coordinates;
@@ -26,19 +25,20 @@ public class LandMark {
         return description;
     }
 
-    public ArrayList<CloudPoint> getCoordinates() {
+    public List<CloudPoint> getCoordinates() {
         return coordinates;
   }
 
-    public void setCoordinates(ArrayList<CloudPoint> coordinates) {
+    public void setCoordinates(List<CloudPoint> coordinates) {
         this.coordinates = coordinates;
     }
 
-    public double getAvarageCounter() {
-        return avarageCounter;
-    }
-
-    public void setAvarageCounter(double avarageCounter) {
-        this.avarageCounter = avarageCounter;
+    @Override
+    public String toString() {
+        return "LandMark{" +
+                "id='" + id + '\'' +
+                ", description='" + description + '\'' +
+                ", coordinates=" + coordinates +
+                '}';
     }
 }

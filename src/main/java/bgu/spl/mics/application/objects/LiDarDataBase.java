@@ -1,6 +1,16 @@
 package bgu.spl.mics.application.objects;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -23,14 +33,21 @@ public class LiDarDataBase {
      * @param filePath The path to the LiDAR data file.
      * @return The singleton instance of LiDarDataBase.
      */
-    public synchronized static LiDarDataBase getInstance(String filePath) {
-        if(LiDarDataBaseHolder.instance == null){
-            //GSON
-            List<StampedCloudPoints> cloudPoints = null;
-
-
-            LiDarDataBaseHolder.instance = new LiDarDataBase(cloudPoints);
-        }
+    public static LiDarDataBase getInstance(String filePath) {
+        try {
+            if (LiDarDataBaseHolder.instance == null) {
+                Gson gson = new Gson();
+                // Parse LiDAR data from lidar_data.json
+                Path lidarFilePath = Paths.get(filePath);
+                Reader lidarReader = Files.newBufferedReader(lidarFilePath);
+                Type lidarMapType = new TypeToken<StampedCloudPoints[]>() {
+                }.getType();
+                StampedCloudPoints[] lidarData = gson.fromJson(lidarReader, lidarMapType);
+                lidarReader.close();
+                //GSON
+                LiDarDataBaseHolder.instance = new LiDarDataBase(Arrays.asList(lidarData));
+            }
+        } catch (IOException e){}
         return LiDarDataBaseHolder.instance;
     }
 

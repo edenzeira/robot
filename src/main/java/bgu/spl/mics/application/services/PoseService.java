@@ -1,13 +1,12 @@
 package bgu.spl.mics.application.services;
 
+import bgu.spl.mics.Broadcast;
 import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.CrashedBroadcast;
 import bgu.spl.mics.application.messages.PoseEvent;
 import bgu.spl.mics.application.messages.TerminatedBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
-import bgu.spl.mics.application.objects.GPSIMU;
-import bgu.spl.mics.application.objects.Pose;
-import bgu.spl.mics.application.objects.STATUS;
+import bgu.spl.mics.application.objects.*;
 
 import java.util.List;
 
@@ -37,10 +36,21 @@ public class PoseService extends MicroService {
         //Subscribe to TickBroadcast to process ticks
         subscribeBroadcast(TickBroadcast.class, tick -> {
             //send pose event
-            Pose p = gpsimu.getCurrentPose(tick.getCurrentTick());
-            if(p != null) {
-                PoseEvent poseEvent = new PoseEvent(this.getName(), p);
-                sendEvent(poseEvent);
+            if (gpsimu.getStatus() == STATUS.UP){
+                Pose p = gpsimu.getCurrentPose(tick.getCurrentTick());
+                StatisticalFolder.getInstance().updatePosesLastFrame(p);
+                if(p != null) {
+                    PoseEvent poseEvent = new PoseEvent(this.getName(), p);
+                    sendEvent(poseEvent);
+                    gpsimu.updateStatus(tick.getCurrentTick());
+              }
+            }
+            if (gpsimu.getStatus() == STATUS.DOWN) {
+                FusionSlam.getInstance().reduceNumOfUpThreads();
+                if (FusionSlam.getInstance().getNumOfUpThreads() == 0) {
+                    Broadcast b = new TerminatedBroadcast("Pose");
+                    sendBroadcast(b);
+                }
             }
         });
 

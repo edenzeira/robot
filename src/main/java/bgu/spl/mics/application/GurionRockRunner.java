@@ -35,7 +35,7 @@ public class GurionRockRunner {
      * @param args Command-line arguments. The first argument is expected to be the path to the configuration file.
      */
     public static void main(String[] args) {
-        System.out.println("eden and may are the best");
+        System.out.println("eden and may are the bestx2");
         try {
             //Parse configuration file.
             ConfigFile configFile;
@@ -53,7 +53,6 @@ public class GurionRockRunner {
             Type cameraMapType = new TypeToken<Map<String, List<StampedDetectedObjects>>>() {}.getType();
             Map<String, List<StampedDetectedObjects>> cameras = gson.fromJson(cameraReader, cameraMapType);
             cameraReader.close();
-            System.out.println("Parsed Camera Data: " + cameras);
 
             // Parse Pose data from pose JSON file
             Path poseFilePath = configDir.resolve(configFile.getPoseJsonFile());
@@ -61,58 +60,43 @@ public class GurionRockRunner {
             Type poseListType = new TypeToken<List<Pose>>() {}.getType();
             List<Pose> stumpedPoses = gson.fromJson(poseReader, poseListType);
             poseReader.close();
-            System.out.println("Parsed Pose Data: " + stumpedPoses);
 
-            // Initialize system components and services.
-
-            for (Pose pose : stumpedPoses) {
-                System.out.println("Pose " + pose.toString() + '\'' );
-            }
-
-            // creating TimeService and PoseService
+            int numOfThreads = 0;
+            LiDarDataBase.getInstance(configFile.getLidarWorkers().getLidars_data_path());
+            // creating PoseService
             List<Thread> threads = new ArrayList<>();
-            threads.add(new Thread(new TimeService(configFile.getTickTime(), configFile.getDuration())));
-            GPSIMU gps = new GPSIMU(0, STATUS.UP , stumpedPoses);
-            System.out.println("gps " + gps.toString());
-            threads.add(new Thread(new PoseService(gps)));
-
             //creating CameraServices
             List<Camera> camerasObj = new ArrayList<>();
             for (Camera cameraInfo : configFile.getCameras().getCamerasConfigurations()){
-                Camera cameraObj = new Camera(cameraInfo.getId() , cameraInfo.getFrequency() , STATUS.UP , cameraInfo.getCamera_key() , cameraInfo.getStampedDetectedObjects());
+                List<StampedDetectedObjects> detectedObjects = cameras.get(cameraInfo.getCamera_key());
+                Camera cameraObj = new Camera(cameraInfo.getId() , cameraInfo.getFrequency() , STATUS.UP , cameraInfo.getCamera_key() , detectedObjects);
                 camerasObj.add(cameraObj);
-                System.out.println(cameraObj.toString());
                 threads.add(new Thread(new CameraService(cameraObj)));
+                numOfThreads++;
             }
 
-            /*
-            // Parse LiDAR data from lidar_data.json
-            Path lidarFilePath = configDir.resolve(configFile.getLidarWorkers().getLidars_data_path());
-            Reader lidarReader = Files.newBufferedReader(lidarFilePath);
-            Type lidarListType = new TypeToken<List<LiDarWorkerTracker>>() {}.getType();
-            List<LiDarWorkerTracker> lidarData = gson.fromJson(lidarReader, lidarListType);
-            lidarReader.close();
-            System.out.println("Parsed LiDAR Data: " + lidarData);
-
-             */
-
-
-           /*
             //creating Lidar workers
             List <LiDarWorkerTracker> LiDarWorkers = new ArrayList<>();
             LiDarWorkerTracker[] LidarConfigurations = configFile.getLidarWorkers().getLidarConfigurations();
             for (LiDarWorkerTracker lidar : LidarConfigurations){
                 LiDarWorkerTracker lidarObj = new LiDarWorkerTracker(lidar.getId() , lidar.getFrequency() , STATUS.UP , lidar.getLastTrackedObjects());
                 LiDarWorkers.add(lidarObj);
-                System.out.println(lidarObj.toString());
-                for (TrackedObject obj: lidar.getLastTrackedObjects())
-                    System.out.println(obj.toString());
                 threads.add(new Thread(new LiDarService(lidarObj)));
+                numOfThreads++;
             }
+
+            //initialize the time service at the end
+            threads.add(new Thread(new TimeService(configFile.getTickTime()*1000, configFile.getDuration())));
+            GPSIMU gps = new GPSIMU(0, STATUS.UP , stumpedPoses);
+            threads.add(new Thread(new PoseService(gps)));
+            numOfThreads++;
 
             // creating fusion slam
             FusionSlam fusionSlam = FusionSlam.getInstance();
+            System.out.println(numOfThreads);
+            fusionSlam.setNumOfUpThreads(numOfThreads); //for the counter
             threads.add(new Thread(new FusionSlamService(fusionSlam)));
+            fusionSlam.setOutputFilePath(Paths.get(args[1])); //reset the outputFile
 
             // Start the simulation.
             System.out.println("Simulation started successfully.");
@@ -124,7 +108,7 @@ public class GurionRockRunner {
 
             // Wait for all threads to complete
             for (Thread thread : threads) {
-                thread.join(); // do we need this??
+                thread.join();
             }
 
             // After all threads finish
@@ -134,9 +118,7 @@ public class GurionRockRunner {
             long elapsedTime = endTime - startTime;
             System.out.println("Simulation took: " + elapsedTime + " milliseconds.");
 
-*/
-//| InterruptedException e
-        } catch (IOException e) { //the second interrupted is because of join - we need to check if we need this
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace(); // Print the error details
         }
     }

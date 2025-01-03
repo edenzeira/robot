@@ -15,6 +15,8 @@ public class Camera {
     private STATUS status;
     private String camera_key;
     private final List<StampedDetectedObjects> stampedDetectedObjects;
+    private StampedDetectedObjects lastFrame;
+    private int taskCounter;
 
     public Camera(int id, int frequency, STATUS status,String camera_key, List<StampedDetectedObjects> stampedDetectedObjects) {
         this.id = id;
@@ -22,6 +24,8 @@ public class Camera {
         this.status = status;
         this.camera_key = camera_key;
         this.stampedDetectedObjects = stampedDetectedObjects;
+        this.taskCounter = 0;
+
     }
 
     public int getId() {
@@ -45,12 +49,14 @@ public class Camera {
         return stampedDetectedObjects;
     }
 
-    public List<DetectedObject> handle_tick(int currentTime) {
+    public StampedDetectedObjects handle_tick(int currentTime) {
         if (stampedDetectedObjects != null) {
             // Retrieves a detectedObjectsList according to the time and frequancy
             for (StampedDetectedObjects list : stampedDetectedObjects) {
-                if (list.getTime() + frequency == currentTime)
-                    return list.getDetectedObjects();
+                if (list.getTime() + frequency == currentTime) {
+                    taskCounter++;
+                    return list;
+                }
             }
         }
         return null;
@@ -73,6 +79,31 @@ public class Camera {
         return "CameraInfo{" +
                 "id=" + id +
                 ", frequency=" + frequency +
-                ", camera_key='" + camera_key + '\'' + s + '}';
+                ", camera_key='" + camera_key + '\'' +
+                s + '\'' +
+                '}';
+    }
+
+    public StampedDetectedObjects getCurrentStampted(int currentTick) {
+        for(StampedDetectedObjects obj: stampedDetectedObjects) {
+            if(obj.getTime() + frequency == currentTick){
+                return obj;
+            }
+        }
+        return null;
+    }
+
+    public void updateStatus(){
+        if(taskCounter == stampedDetectedObjects.size()){
+            status = STATUS.DOWN;
+        }
+    }
+
+    public StampedDetectedObjects getLastFrame() {
+        return lastFrame;
+    }
+
+    public void setLastFrame(StampedDetectedObjects s) {
+        lastFrame = s;
     }
 }

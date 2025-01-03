@@ -37,4 +37,13 @@ public class StampedCloudPoints {
         }
         return points;
     }
+
+    @Override
+    public String toString() {
+        return "StampedCloudPoints{" +
+                "id='" + id + '\'' +
+                ", time=" + time +
+                ", cloudPoints=" + cloudPoints +
+                '}';
+    }
 }
