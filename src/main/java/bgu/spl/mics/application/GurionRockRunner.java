@@ -40,23 +40,19 @@ public class GurionRockRunner {
             //Parse configuration file.
             ConfigFile configFile;
             Gson gson = new Gson();
-            String configFilePath = "./configuration_file.json";
-            Reader reader = Files.newBufferedReader(Paths.get(configFilePath));
+            Reader reader = Files.newBufferedReader(Paths.get(args[0]));
             configFile = gson.fromJson(reader, ConfigFile.class);
             reader.close();
-            Path configDir = Paths.get(configFilePath).getParent();
 
 
             // Parse camera data from camera JSON file
-            Path cameraFilePath = configDir.resolve(configFile.getCameras().getCamera_datas_path());
-            Reader cameraReader = Files.newBufferedReader(cameraFilePath);
+            Reader cameraReader = new FileReader(configFile.getCameras().getCamera_datas_path());
             Type cameraMapType = new TypeToken<Map<String, List<StampedDetectedObjects>>>() {}.getType();
             Map<String, List<StampedDetectedObjects>> cameras = gson.fromJson(cameraReader, cameraMapType);
             cameraReader.close();
 
             // Parse Pose data from pose JSON file
-            Path poseFilePath = configDir.resolve(configFile.getPoseJsonFile());
-            Reader poseReader = Files.newBufferedReader(poseFilePath);
+            Reader poseReader = new FileReader(configFile.getPoseJsonFile());
             Type poseListType = new TypeToken<List<Pose>>() {}.getType();
             List<Pose> stumpedPoses = gson.fromJson(poseReader, poseListType);
             poseReader.close();
@@ -87,6 +83,7 @@ public class GurionRockRunner {
 
             //initialize the time service at the end
             threads.add(new Thread(new TimeService(configFile.getTickTime()*1000, configFile.getDuration())));
+            //to make it faster : threads.add(new Thread(new TimeService(configFile.getTickTime(), configFile.getDuration())));
             GPSIMU gps = new GPSIMU(0, STATUS.UP , stumpedPoses);
             threads.add(new Thread(new PoseService(gps)));
             numOfThreads++;
@@ -95,8 +92,10 @@ public class GurionRockRunner {
             FusionSlam fusionSlam = FusionSlam.getInstance();
             System.out.println(numOfThreads);
             fusionSlam.setNumOfUpThreads(numOfThreads); //for the counter
+            Path configDir = Paths.get(args[0]).getParent();
+            Path outputFilePath = configDir.resolve("output_file.json");
+            fusionSlam.setOutputFilePath(outputFilePath);
             threads.add(new Thread(new FusionSlamService(fusionSlam)));
-            fusionSlam.setOutputFilePath(Paths.get(args[1])); //reset the outputFile
 
             // Start the simulation.
             System.out.println("Simulation started successfully.");

@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class FusionSlam {
     private ArrayList<LandMark> landMarks;
     private List<Pose> poses;
-    private Path outputFilePath;
     int numOfUpThreads;
+    private Path outputFilePath;
     ConcurrentHashMap<LandMark, Integer> avarageCounterMap = new ConcurrentHashMap<>();
 
     // Singleton instance holder
@@ -34,10 +34,15 @@ public class FusionSlam {
         this.landMarks = new ArrayList<LandMark>() ;
         this.poses = new ArrayList<Pose>() ;
         this.numOfUpThreads = 0;
+        outputFilePath = null;
     }
 
     public static FusionSlam getInstance() {
         return FusionSlamHolder.instance;
+    }
+
+    public void setOutputFilePath(Path path){
+        this.outputFilePath = path;
     }
 
     public void setNumOfUpThreads(int numOfDownThreads){
@@ -46,10 +51,6 @@ public class FusionSlam {
 
     public void reduceNumOfUpThreads(){
         numOfUpThreads--;
-    }
-
-    public void setOutputFilePath(Path path){
-        this.outputFilePath = path;
     }
 
     public String toString() {
