@@ -40,7 +40,7 @@ public class TimeService extends MicroService {
         //subscribe for time tick -> waits ticktime then sends a time tick
         //Subscribe to TickBroadcast to process ticks
         subscribeBroadcast(TickBroadcast.class, tick -> {
-            if (tick.getCurrentTick() <= Duration) {
+            if (tick.getCurrentTick() < Duration) {
                 try {
                     Thread.sleep(TickTime);
                 } catch (InterruptedException ignored) {}

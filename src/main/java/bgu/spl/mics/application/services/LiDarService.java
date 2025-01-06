@@ -71,7 +71,6 @@ public class LiDarService extends MicroService {
                 }
                 if(LiDarWorkerTracker.getStatus() == STATUS.DOWN) {
                     FusionSlam.getInstance().reduceNumOfUpThreads();
-                    System.out.println("lidar:the time is: " + event.getTime() +" "+ FusionSlam.getInstance().getNumOfUpThreads());
                     if (FusionSlam.getInstance().getNumOfUpThreads() == 0) {
                         Broadcast b = new TerminatedBroadcast("Lidar");
                         sendBroadcast(b);

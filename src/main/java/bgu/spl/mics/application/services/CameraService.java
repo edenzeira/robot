@@ -68,7 +68,6 @@ public class CameraService extends MicroService {
                     }
                     if (camera.getStatus() == STATUS.DOWN){
                         FusionSlam.getInstance().reduceNumOfUpThreads();
-                        System.out.println("camera:the time is: " + tick.getCurrentTick() +" "+ FusionSlam.getInstance().getNumOfUpThreads());
                         if (FusionSlam.getInstance().getNumOfUpThreads() == 0) {
                             Broadcast b = new TerminatedBroadcast("Cam");
                             sendBroadcast(b);

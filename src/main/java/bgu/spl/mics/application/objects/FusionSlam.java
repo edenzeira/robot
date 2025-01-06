@@ -22,7 +22,7 @@ public class FusionSlam {
     private List<Pose> poses;
     int numOfUpThreads;
     private Path outputFilePath;
-    ConcurrentHashMap<LandMark, Integer> avarageCounterMap = new ConcurrentHashMap<>();
+    //ConcurrentHashMap<LandMark, Integer> avarageCounterMap = new ConcurrentHashMap<>();
 
     // Singleton instance holder
     private static class FusionSlamHolder {
@@ -74,7 +74,6 @@ public class FusionSlam {
 
     public void outputFile(){
         try {
-            System.out.println(landMarks);
             StatisticalFolder.getInstance().updateLandMarks(landMarks);
             Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
             Writer writer = Files.newBufferedWriter(outputFilePath);
@@ -86,12 +85,11 @@ public class FusionSlam {
 
     public List<CloudPoint> calculateAvarage(LandMark landMark, List<CloudPoint> globalCoordinates){
         List<CloudPoint> oldCoordinates = landMark.getCoordinates();
-        avarageCounterMap.put(landMark, avarageCounterMap.get(landMark) + 1);
         //calculate the avarage for x and y in each cloudPoint of the existing object with the new data
         List<CloudPoint> newCoordinates = new ArrayList<>();
-        for (int i = 0; i < globalCoordinates.size(); i++) {
-            double newX = (oldCoordinates.get(i).getX() * (avarageCounterMap.get(landMark)-1) + globalCoordinates.get(i).getX()) / (avarageCounterMap.get(landMark));
-            double newY = (oldCoordinates.get(i).getY() * (avarageCounterMap.get(landMark)-1) + globalCoordinates.get(i).getY()) / (avarageCounterMap.get(landMark));
+        for (int i = 0; i < oldCoordinates.size() & i < globalCoordinates.size(); i++) {
+            double newX = (oldCoordinates.get(i).getX() + globalCoordinates.get(i).getX())/2;
+            double newY = (oldCoordinates.get(i).getY() + globalCoordinates.get(i).getY())/2;
             newCoordinates.add(new CloudPoint(newX, newY));
         }
         return newCoordinates;
@@ -145,7 +143,6 @@ public class FusionSlam {
         if (!objectExists) {
             LandMark newLandMark = new LandMark(o.getId(), o.getDescription(), globalCoordinates);
             landMarks.add(newLandMark);
-            avarageCounterMap.put(newLandMark, 1);
             int NumLandmarks = StatisticalFolder.getInstance().getNumLandmarks();
             StatisticalFolder.getInstance().setNumLandmarks(NumLandmarks + 1);
         }

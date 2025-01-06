@@ -21,16 +21,16 @@ import java.util.concurrent.LinkedBlockingQueue;
  * the number of objects detected and tracked, and the number of landmarks identified.
  */
 public class StatisticalFolder {
+    private String errorDescription;
+    private String faultySensor;
+    private ConcurrentHashMap<String, StampedDetectedObjects> camerasLastFrame;
+    private ConcurrentHashMap<Integer, List<TrackedObject>> lidarsLastFrame;
+    private CopyOnWriteArrayList<Pose> posesLastFrame;
     private int systemRuntime;
     private int numDetectedObjects;
     private int numTrackedObjects;
     private int numLandmarks;
     private ConcurrentHashMap<String, LandMark> landMarks;
-    private ConcurrentHashMap<String, StampedDetectedObjects> camerasLastFrame;
-    private ConcurrentHashMap<Integer, List<TrackedObject>> lidarsLastFrame;
-    private CopyOnWriteArrayList<Pose> posesLastFrame;
-    private String errorDescription;
-    private String faultySensor;
 
     private static class StatisticalFolderHolder {
         private static StatisticalFolder instance = new StatisticalFolder(0, 0, 0, 0);

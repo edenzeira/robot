@@ -7,14 +7,12 @@ import com.google.gson.reflect.TypeToken;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -44,21 +42,24 @@ public class GurionRockRunner {
             configFile = gson.fromJson(reader, ConfigFile.class);
             reader.close();
 
-
             // Parse camera data from camera JSON file
-            Reader cameraReader = new FileReader(configFile.getCameras().getCamera_datas_path());
+            Path configDir = Paths.get(args[0]).getParent(); // Get the parent directory of the configuration file
+            Path cameraFilePath = configDir.resolve(configFile.getCameras().getCamera_datas_path()); // Resolve the relative path
+            Reader cameraReader = Files.newBufferedReader(cameraFilePath); // Use Files.newBufferedReader for consistency
             Type cameraMapType = new TypeToken<Map<String, List<StampedDetectedObjects>>>() {}.getType();
             Map<String, List<StampedDetectedObjects>> cameras = gson.fromJson(cameraReader, cameraMapType);
             cameraReader.close();
 
             // Parse Pose data from pose JSON file
-            Reader poseReader = new FileReader(configFile.getPoseJsonFile());
+            Path poseFilePath = configDir.resolve(configFile.getPoseJsonFile()); // Resolve the relative path for Pose file
+            Reader poseReader = Files.newBufferedReader(poseFilePath); // Use Files.newBufferedReader
             Type poseListType = new TypeToken<List<Pose>>() {}.getType();
-            List<Pose> stumpedPoses = gson.fromJson(poseReader, poseListType);
+            List<Pose> stumpedPoses = gson.fromJson(poseReader, poseListType); // Parse Pose data
             poseReader.close();
 
             int numOfThreads = 0;
-            LiDarDataBase.getInstance(configFile.getLidarWorkers().getLidars_data_path());
+            Path lidarFilePath = configDir.resolve(configFile.getLidarWorkers().getLidars_data_path());
+            LiDarDataBase.getInstance(lidarFilePath.toString());
             // creating PoseService
             List<Thread> threads = new ArrayList<>();
             //creating CameraServices
@@ -82,26 +83,23 @@ public class GurionRockRunner {
             }
 
             //initialize the time service at the end
-            //threads.add(new Thread(new TimeService(configFile.getTickTime()*1000, configFile.getDuration())));
+            threads.add(new Thread(new TimeService(configFile.getTickTime()*1000, configFile.getDuration())));
             //to make it faster
-            threads.add(new Thread(new TimeService(configFile.getTickTime(), configFile.getDuration())));
+            //threads.add(new Thread(new TimeService(configFile.getTickTime(), configFile.getDuration())));
             GPSIMU gps = new GPSIMU(0, STATUS.UP , stumpedPoses);
             threads.add(new Thread(new PoseService(gps)));
             numOfThreads++;
 
             // creating fusion slam
             FusionSlam fusionSlam = FusionSlam.getInstance();
-            System.out.println(numOfThreads);
             fusionSlam.setNumOfUpThreads(numOfThreads); //for the counter
-            Path configDir = Paths.get(args[0]).getParent();
-            Path outputFilePath = configDir.resolve("output_file.json");
+            Path configDir2 = Paths.get(args[0]).getParent();
+            Path outputFilePath = configDir2.resolve("output_file.json");
             fusionSlam.setOutputFilePath(outputFilePath);
             threads.add(new Thread(new FusionSlamService(fusionSlam)));
 
+
             // Start the simulation.
-            System.out.println("Simulation started successfully.");
-            // Start the timer
-            long startTime = System.currentTimeMillis();
             for (Thread thread : threads) {
                 thread.start();
             }
@@ -112,11 +110,6 @@ public class GurionRockRunner {
             }
 
             // After all threads finish
-            System.out.println("Simulation finished successfully.");
-            // End the timer
-            long endTime = System.currentTimeMillis();
-            long elapsedTime = endTime - startTime;
-            System.out.println("Simulation took: " + elapsedTime + " milliseconds.");
 
         } catch (IOException | InterruptedException e) {
             e.printStackTrace(); // Print the error details

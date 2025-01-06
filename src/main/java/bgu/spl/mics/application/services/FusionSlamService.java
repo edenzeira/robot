@@ -3,11 +3,7 @@ import bgu.spl.mics.MicroService;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.objects.*;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * FusionSlamService integrates data from multiple sensors to build and update
@@ -47,14 +43,15 @@ public class FusionSlamService extends MicroService {
         //Subscribe to TrackedObjectsEvent
         subscribeEvent(TrackedObjectsEvent.class, event -> {
             List<TrackedObject> list = event.getTrackedObjects();
-            Pose robotP = fusionSlam.isPoseExist(list.get(0));
-            if (robotP.equals(new Pose(-1,-1,-1,-1))) {  //check if the pose already updated
-                TrackedObjectsEvent e = new TrackedObjectsEvent(this.getName(), list);
-                sendEvent(e);
-            }
-            else {
-                for (TrackedObject o : list)
-                    fusionSlam.handle_trackedObjectEvent(robotP, o);
+            if (list != null && list.size() > 0) {
+                Pose robotP = fusionSlam.isPoseExist(list.get(0));
+                if (robotP.equals(new Pose(-1,-1,-1,-1))) {  //check if the pose already updated
+                    sendEvent(event);
+                }
+                else {
+                    for (TrackedObject o : list)
+                        fusionSlam.handle_trackedObjectEvent(robotP, o);
+                }
             }
         });
 
@@ -73,7 +70,6 @@ public class FusionSlamService extends MicroService {
                 StatisticalFolder.getInstance().setFaultySensor(null);
                 StatisticalFolder.getInstance().setErrorDescription(null);
                 StatisticalFolder.getInstance().setSystemRuntime(currentTime);
-                System.out.println("the time is: " + currentTime);
                 fusionSlam.outputFile();
                 terminate();
         });
