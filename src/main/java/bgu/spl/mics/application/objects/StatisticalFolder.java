@@ -21,11 +21,11 @@ import java.util.concurrent.LinkedBlockingQueue;
  * the number of objects detected and tracked, and the number of landmarks identified.
  */
 public class StatisticalFolder {
-    private String errorDescription;
+    private String error;
     private String faultySensor;
-    private ConcurrentHashMap<String, StampedDetectedObjects> camerasLastFrame;
-    private ConcurrentHashMap<Integer, List<TrackedObject>> lidarsLastFrame;
-    private CopyOnWriteArrayList<Pose> posesLastFrame;
+    private ConcurrentHashMap<String, StampedDetectedObjects> lastCameraFrames;
+    private ConcurrentHashMap<Integer, List<TrackedObject>> lastLidarFrames;
+    private CopyOnWriteArrayList<Pose> poses;
     private int systemRuntime;
     private int numDetectedObjects;
     private int numTrackedObjects;
@@ -41,9 +41,9 @@ public class StatisticalFolder {
         this.numDetectedObjects = numDetectedObjects;
         this.numTrackedObjects = numTrackedObjects;
         this.numLandmarks = numLandmarks;
-        this.camerasLastFrame = new ConcurrentHashMap<>();
-        this.lidarsLastFrame = new ConcurrentHashMap<>();
-        this.posesLastFrame = new CopyOnWriteArrayList<>();
+        this.lastCameraFrames = new ConcurrentHashMap<>();
+        this.lastLidarFrames = new ConcurrentHashMap<>();
+        this.poses = new CopyOnWriteArrayList<>();
         this.landMarks = new ConcurrentHashMap<>();
     }
 
@@ -56,41 +56,41 @@ public class StatisticalFolder {
     }
 
     public void setErrorDescription(String errorDescription) {
-        this.errorDescription = errorDescription;
+        this.error = errorDescription;
     }
 
     public void setCamerasLastFrame(){
-        camerasLastFrame=null;
+        lastCameraFrames=null;
     }
 
     public void setLidarsLastFrame(){
-        lidarsLastFrame=null;
+        lastLidarFrames=null;
     }
 
     public void setPosesLastFrame() {
-        posesLastFrame=null;
+        poses=null;
     }
 
 
     public void updateCamerasLastFrame(StampedDetectedObjects e , String camera_id) {
         if(e == null) return;
-        if (camerasLastFrame.containsKey(camera_id))
-            camerasLastFrame.put(camera_id, e);
+        if (lastCameraFrames.containsKey(camera_id))
+            lastCameraFrames.put(camera_id, e);
         else {
-            camerasLastFrame.putIfAbsent(camera_id, e);
+            lastCameraFrames.putIfAbsent(camera_id, e);
         }
     }
 
     public void updateLidarsLastFrame(List<TrackedObject> trackedObjects , int lidar_id) {
-        if (lidarsLastFrame.containsKey(lidar_id))
-            lidarsLastFrame.put(lidar_id, trackedObjects);
+        if (lastLidarFrames.containsKey(lidar_id))
+            lastLidarFrames.put(lidar_id, trackedObjects);
         else {
-            lidarsLastFrame.putIfAbsent(lidar_id, trackedObjects);
+            lastLidarFrames.putIfAbsent(lidar_id, trackedObjects);
         }
     }
 
     public void updatePosesLastFrame(Pose pose) {
-        posesLastFrame.add(pose);
+        poses.add(pose);
     }
 
     public void updateLandMarks(List<LandMark> lst) {
@@ -104,15 +104,15 @@ public class StatisticalFolder {
     }
 
     public ConcurrentHashMap<String, StampedDetectedObjects> getCamerasLastFrame() {
-        return camerasLastFrame;
+        return lastCameraFrames;
     }
 
     public ConcurrentHashMap<Integer, List<TrackedObject>> getLidarsLastFrame() {
-        return lidarsLastFrame;
+        return lastLidarFrames;
     }
 
     public CopyOnWriteArrayList<Pose> getPosesLastFrame() {
-        return posesLastFrame;
+        return poses;
     }
 
 
