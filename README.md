@@ -1,6 +1,6 @@
-# 🤖 SPL Assignment 2 – GurionRock Robot Mapping System
+# 🤖 Robot Mapping System
 
-This Java project simulates a multi-threaded perception and mapping system for a robotic vacuum, developed in the SPL 225 course at Ben-Gurion University.
+This Java project simulates a multi-threaded perception and mapping system for a robotic vacuum.
 
 ## 🎯 Goals
 - Practice Java **concurrency**, **thread safety**, and **synchronization**
